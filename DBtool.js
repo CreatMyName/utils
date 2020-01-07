@@ -118,6 +118,6 @@ const DBtool = (function(){
         getAll(modelName) { return this.openDB('getAll', { modelName, value:'' }) }
         
     }
-    return DBtool
+    return DBtool 
 })();
 export default new DBtool('jsapp', 1)
