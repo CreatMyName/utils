@@ -2,13 +2,15 @@
  * @Author: hou
  * @Date: 2018-11-13 16:05:57
  * @Last Modified by: hou
- * @Last Modified time: 2020-05-31 15:09:30
+ * @Last Modified time: 2020-07-04 12:03:06
  */
+/** 驱动器对外接口 */
 class DataDrive{
-    constructor(obj){
-        if(!obj) return false
-        'data' in obj ? obj.data = this.resolve(obj.data) : null
-        'render' in obj ? this.renderFun = obj.render : null
+    constructor(data, key, render){
+        data[key] = data[key] === null || data[key] === undefined ? '' : data[key]
+        data[key] = this.resolve(data[key])
+        // 'data' in dri ? dri.data.obj[dri.data.key] = this.resolve(dri.data.obj[dri.data.key], dri.data.key, dri.data.obj) : null
+        render ? this.renderFun = render : null
         typeof this.renderFun === 'function' ? this.renderFun() : null
     }
     $set(data, key, targit, render){
@@ -36,7 +38,10 @@ class DataDrive{
                 if(newval === val || (newval !== newval && value !== value)) return 
                 let type = typeof val !== typeof newval
                 /** 判断set值 方便做二次监听 */
-                if(type && typeof newval === 'object'){
+                if(newval === null || newval === undefined){
+                    newval = ''
+                }
+                if(type && newval && typeof newval === 'object'){
                     Array.isArray(newval) ? _this.observeArr(newval) : newval = _this.proxy(newval)
                 }
                 val = newval
@@ -80,13 +85,13 @@ class DataDrive{
      * @param { Array } target  
      */
     proxy(value){
-        this.initDrive(value)
+        value instanceof File ? null : this.initDrive(value)
         let _that = this
         return new Proxy(value,{
             set(targit,prot,val,receiver){
                 let isset = Reflect.set(targit,prot,val,receiver)
                 /**新值进行拦截 */
-                if(typeof targit[prot] === 'object'){
+                if(typeof targit[prot] === 'object' && targit[prot] !== null){
                     Array.isArray(targit[prot]) ? _that.observeArr(targit[prot]) : val = _that.proxy(targit[prot])
                     isset = Reflect.set(targit,prot,val,receiver)
                 }else{
@@ -100,33 +105,39 @@ class DataDrive{
     }
     /** 初始化数据拦截 */
     initDrive(data){
+        if(data instanceof File){
+            data = this.proxy(data)
+            return
+        }
         for(var key in data){
             data[key] === null || data[key] === undefined ? data[key] = '' : null
             if(typeof data[key] === 'object'){
                 Array.isArray(data[key]) ? this.observeArr(data[key]) : data[key] = this.proxy(data[key])
             }else{
+                data[key] === null || data[key] === undefined ? data[key] = '' : null
                 this.define(false, data, key, data[key])
             }
         }
     }
     /** 类型 */
     resolve(data, key, targit) {
-        if(typeof data !== 'object'){
+        if(typeof data !== 'object' || data === null){
             key && targit ? this.define(false, targit, key, data[key]) : null
             return data
         }
-        if(Array.isArray(data)) 
+        if(Array.isArray(data)){
             return this.observeArr(data)
+        } 
         return this.proxy(data)
     }
     /** 订阅者 */
     render(from){
-        console.log('渲染一下！' + from)
+        // console.log('渲染一下！' + from)
         typeof this.renderFun === 'function' ? this.renderFun() : null;
     }
 }
 
-export default function(obj){
-    let drive = drive || new DataDrive(obj)
+export default function(obj, key, render){
+    let drive = drive || new DataDrive(obj, key , render)
     return drive
 }
