@@ -18,7 +18,7 @@ class DataDrive{
         this.renderFun = render || null
     }
     /**
-     * defin 观察发布
+     * defin 
      * @param { String } type 支持object和array两个参数
      * @param { Object } data 拦截的对象
      * @param { String } key 拦截的字段名或方法名
@@ -130,7 +130,7 @@ class DataDrive{
         } 
         return this.proxy(data)
     }
-    /** 订阅者 */
+    /** 渲染执行 */
     render(from){
         // console.log('渲染一下！' + from)
         typeof this.renderFun === 'function' ? this.renderFun() : null;
