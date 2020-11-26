@@ -61,7 +61,7 @@ const DBtool = (function(){
         console.warn(`创建表${modelName}未成功，原因：已存在该表`)
     }
     /**
-     * @deprecated  数据库
+     * @description  数据库
      */
     class DBtool {
         constructor(dbName, dbVvrsion) {
